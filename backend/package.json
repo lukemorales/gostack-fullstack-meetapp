@@ -11,6 +11,7 @@
     "undo-migrate": "sequelize db:migrate:undo"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
     "pg": "^7.12.1",
