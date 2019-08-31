@@ -39,8 +39,6 @@ class SessionController {
         expiresIn: authConfig.expiresIn,
       }),
     });
-
-    return res.json({});
   }
 }
 
