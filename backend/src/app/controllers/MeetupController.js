@@ -17,7 +17,7 @@ class MeetupController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(401).json({ error: 'Validation failed' });
+      return res.status(400).json({ error: 'Validation failed' });
     }
 
     if (isBefore(parseISO(req.body.date), Date.now())) {
@@ -32,9 +32,9 @@ class MeetupController {
         organizer_id: req.userID,
       });
 
-      return res.json(meetup);
+      return res.status(201).json(meetup);
     } catch (err) {
-      return res.json(err.message);
+      return res.status(400).json(err.message);
     }
   }
 
@@ -66,9 +66,9 @@ class MeetupController {
 
       const totalPages = Math.ceil(meetups.count / pageLimit);
 
-      return res.json({ totalPages, meetups });
+      return res.status(200).json({ totalPages, meetups });
     } catch (err) {
-      return res.json(err);
+      return res.status(400).json(err);
     }
   }
 
@@ -82,54 +82,63 @@ class MeetupController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(401).json({ error: 'Validation failed' });
+      return res.status(400).json({ error: 'Validation failed' });
     }
 
-    const meetup = await Meetup.findByPk(req.params.id);
+    try {
+      const meetup = await Meetup.findByPk(req.params.id);
 
-    if (!meetup) {
-      return res.status(401).json({ error: 'Meetup not found' });
+      if (!meetup) {
+        return res.status(400).json({ error: 'Meetup not found' });
+      }
+
+      if (meetup.organizer_id !== req.userID) {
+        return res
+          .status(401)
+          .json({ error: `You don't have authorization to edit this Meetup` });
+      }
+
+      if (meetup.past) {
+        return res.status(400).json({ error: "Can't update past Meetup" });
+      }
+
+      await meetup.update(req.body);
+
+      return res.status(200).json(meetup);
+    } catch (err) {
+      return res.status(400).json(err);
     }
-
-    if (meetup.organizer_id !== req.userID) {
-      return res
-        .status(401)
-        .json({ error: `You don't have authorization to edit this Meetup` });
-    }
-
-    if (meetup.past) {
-      return res.status(401).json({ error: "Can't update past Meetup" });
-    }
-
-    await meetup.update(req.body);
-
-    return res.json({ meetup });
   }
 
   async delete(req, res) {
-    const meetup = await Meetup.findByPk(req.params.id);
+    try {
+      const meetup = await Meetup.findByPk(req.params.id);
 
-    if (!meetup) {
-      return res.status(401).json({ error: 'Meetup not found' });
-    }
+      if (!meetup) {
+        return res.status(400).json({ error: 'Meetup not found' });
+      }
 
-    const { title } = meetup;
+      const { title } = meetup;
 
-    if (meetup.organizer_id !== req.userID) {
+      if (meetup.organizer_id !== req.userID) {
+        return res.status(401).json({
+          error: `You don't have authorization to delete this Meetup`,
+        });
+      }
+
+      if (meetup.past) {
+        return res.status(400).json({ error: "Can't delete past Meetup" });
+      }
+
+      await meetup.destroy();
+
       return res
-        .status(401)
-        .json({ error: `You don't have authorization to delete this Meetup` });
+        .status(200)
+        .json({ success: `Meetup "${title}" has been canceled` })
+        .send();
+    } catch (err) {
+      return res.status(400).json(err.message);
     }
-
-    if (meetup.past) {
-      return res.status(401).json({ error: "Can't delete past Meetup" });
-    }
-
-    await meetup.destroy();
-
-    return res
-      .status(200)
-      .json({ success: `Meetup "${title}" has been canceled` });
   }
 }
 
