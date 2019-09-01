@@ -10,6 +10,7 @@ class OrganizerController {
         where: {
           organizer_id: req.userID,
         },
+        order: [['date']],
       });
 
       return res.status(200).json(meetups);
