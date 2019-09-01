@@ -34,8 +34,8 @@ export default class Meetup extends Model {
     });
 
     this.belongsTo(models.User, {
-      foreignKey: 'id',
-      sourceKey: 'organizer_id',
+      foreignKey: 'organizer_id',
+      sourceKey: 'id',
       as: 'organizer',
     });
   }

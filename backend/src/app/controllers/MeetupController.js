@@ -53,12 +53,12 @@ class MeetupController {
         },
         limit: pageLimit,
         offset: (page - 1) * pageLimit,
-        order: ['date'],
+        order: [['date']],
         include: [
           {
             model: User,
             as: 'organizer',
-            attributes: ['id', 'name', 'email'],
+            attributes: ['id', 'name'],
           },
           { model: File, as: 'banner', attributes: ['id', 'path', 'url'] },
         ],
