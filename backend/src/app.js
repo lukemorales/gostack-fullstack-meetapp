@@ -21,7 +21,7 @@ class App {
     this.server.use(cors());
     this.server.use(express.json());
     this.server.use(
-      '/upload',
+      '/files',
       express.static(resolve(__dirname, '..', 'tmp', 'uploads'))
     );
   }
